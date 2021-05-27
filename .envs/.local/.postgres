@@ -1,0 +1,7 @@
+# PostgreSQL
+# ------------------------------------------------------------------------------
+POSTGRES_HOST=postgres
+POSTGRES_PORT=5432
+POSTGRES_DB=ice_cream_api
+POSTGRES_USER=bNJRsoEbGnaEdcpcCLkDKavBkdceeVlv
+POSTGRES_PASSWORD=ZypvCRBU2KVQgOxDQWfGjMcTpNamZAp7DcrBDB20uMYEEZ06BHhS92LPQJ7Rzmo8
