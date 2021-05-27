@@ -1,20 +1,14 @@
 from rest_framework import serializers
-from icecream.models import ConeWafer, BaseFlavour, Topping
+from icecream.models import IceCream
 
 
-class ConeWaferModelSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = ConeWafer
-        fields = "__all__"
+class IceCreamModelSerializer(serializers.Serializer):
+    cone_wafer = serializers.CharField()
+    base_flavour = serializers.CharField()
+    toppings = serializers.ListField()
 
 
-class BaseFlavourModelSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = BaseFlavour
-        fields = "__all__"
-
-
-class ToppingModelSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Topping
-        fields = "__all__"
+class ConfigSerializer(serializers.Serializer):
+    cone_wafers = serializers.ListField()
+    base_flavours = serializers.ListField()
+    toppings = serializers.ListField()

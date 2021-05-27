@@ -11,15 +11,15 @@ from rest_framework_simplejwt.views import (
     TokenRefreshView,
 )
 
-from icecream.views import ConeWaferViewSet, BaseFlavourViewSet, ToppingFlavourViewSet
+from icecream.views import ConfigView
+from order.views import OrderViewset
 
 router = DefaultRouter()
-router.register('cones', ConeWaferViewSet, basename='cone')
-router.register('base-flavours', BaseFlavourViewSet, basename='base_flavour')
-router.register('toppings', ToppingFlavourViewSet, basename='topping')
+router.register("orders", OrderViewset, basename="order")
 urlpatterns = router.urls
 
 urlpatterns += [
+    path("config", ConfigView.as_view(), name="config"),
     path("", TemplateView.as_view(template_name="pages/home.html"), name="home"),
     path(
         "about/", TemplateView.as_view(template_name="pages/about.html"), name="about"
