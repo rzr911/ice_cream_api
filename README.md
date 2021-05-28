@@ -2,6 +2,7 @@
 1. Clone the repo and build `docker-compose -f local.yml build`
 2. Run migrations `docker-compose -f local.yml run django python manage.py migrate`
 3. Create a user `docker-compose -f local.yml run django python manage.py createsuperuser`
+4. Run the server `docker-compose -f local.yml up`
 
 # API Doc
 [Postman Link](https://www.getpostman.com/collections/faa2609057132574f0fb)
