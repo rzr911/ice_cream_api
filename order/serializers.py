@@ -1,7 +1,6 @@
 from rest_framework import serializers
 
 from icecream.serializers import IceCreamModelSerializer
-from order.models import StatusChoices
 
 
 class OrderCreateUpdateReadSerializer(serializers.Serializer):
@@ -12,6 +11,7 @@ class OrderCreateUpdateReadSerializer(serializers.Serializer):
     phone_number = serializers.CharField(read_only=True)
     created = serializers.DateTimeField(read_only=True)
     modified = serializers.DateTimeField(read_only=True)
+    status = serializers.CharField(read_only=True)
 
 
 class OrderCheckoutSerializer(serializers.Serializer):
