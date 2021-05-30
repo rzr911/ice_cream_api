@@ -12,7 +12,6 @@ from order.service import OrderService
 class OrderViewset(viewsets.ModelViewSet):
     queryset = Order.objects.all().prefetch_related("icecreams")
     service = OrderService()
-    permission_classes = []
 
     def get_serializer_class(self):
         serializers = {
