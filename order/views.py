@@ -2,15 +2,16 @@ from django.shortcuts import render
 from rest_framework import viewsets
 from rest_framework import status, viewsets
 from rest_framework.response import Response
+from rest_framework.decorators import action
 
-from icecream.models import IceCream
 from order.models import Order, StatusChoices
 from order.serializers import OrderCreateUpdateReadSerializer, OrderCheckoutSerializer
-from rest_framework.decorators import action
+from order.service import OrderService
 
 
 class OrderViewset(viewsets.ModelViewSet):
     queryset = Order.objects.all().prefetch_related("icecreams")
+    service = OrderService()
 
     def get_serializer_class(self):
         serializers = {
@@ -27,21 +28,8 @@ class OrderViewset(viewsets.ModelViewSet):
         data = request.data
         serializer = self.get_serializer(data=data)
         serializer.is_valid(raise_exception=True)
-        icecreams = serializer.validated_data.pop("icecreams")
 
-        order = Order.objects.create(**serializer.validated_data)
-        icecreams = IceCream.objects.bulk_create(
-            [
-                IceCream(
-                    order=order,
-                    cone_wafer=icecream.get("cone_wafer"),
-                    base_flavour=icecream.get("base_flavour"),
-                    toppings=icecream.get("toppings"),
-                )
-                for icecream in icecreams
-            ]
-        )
-
+        order = self.service.create(serializer.validated_data)
         serializer = self.get_serializer(order)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
@@ -52,25 +40,9 @@ class OrderViewset(viewsets.ModelViewSet):
         serializer = self.get_serializer(data=data, instance=order, partial=partial)
         serializer.is_valid(raise_exception=True)
 
-        remarks = data.get("remarks") if data.get("remarks") else order.remarks
-        order.remarks = remarks
-
-        # if icecreams are set in request, previously set icecreams are wiped and the following ones are set
-        if data.get("icecreams"):
-            icecreams = data.get("icecreams")
-            icecreams_to_be_created = IceCream.objects.bulk_create(
-                [
-                    IceCream(
-                        cone_wafer=icecream.get("cone_wafer"),
-                        base_flavour=icecream.get("base_flavour"),
-                        toppings=icecream.get("toppings"),
-                    )
-                    for icecream in icecreams
-                ]
-            )
-            order.icecreams.set(icecreams_to_be_created)
-        order.save()
-
+        order = self.service.update(
+            order=order, validated_data=serializer.validated_data
+        )
         serializer = self.get_serializer(order)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
@@ -79,18 +51,19 @@ class OrderViewset(viewsets.ModelViewSet):
         data = request.data
         order = self.get_object()
 
+        # Order that is Completed should not be allowed to be modified
+        if order.status == StatusChoices.COMPLETED:
+            return Response(
+                data="Completed Order cannot be checked out again",
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
         serializer = self.get_serializer(data=data, instance=order, partial=False)
         serializer.is_valid(raise_exception=True)
 
-        # Order that is Completed should not be allowed to be modified
-        if order.status == StatusChoices.COMPLETED:
-            return Response(message="", status=status.HTTP_400_BAD_REQUEST)
-
-        order.address = serializer.validated_data.get("address")
-        order.phone_number = serializer.validated_data.get("phone_number")
-        order.status = StatusChoices.COMPLETED
-
-        order.save()
+        order = self.service.checkout(
+            order=order, validated_data=serializer.validated_data
+        )
 
         serializer = self.get_serializer(order)
         return Response(serializer.data, status=status.HTTP_200_OK)
